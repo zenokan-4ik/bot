@@ -1,10 +1,14 @@
-from settings import TOKEN
 import json
 import datetime
 from interactions import Client, slash_command, OptionType, SlashContext, Intents, slash_option, Embed, Color, ButtonStyle, Button, listen
 from interactions.api.events import Component
 import toserver
 import time
+import os
+from dotenv import load_dotenv, find_dotenv
+
+load_dotenv(find_dotenv())
+TOKEN = os.environ.get("TOKEN")
 
 ADMINS = [
     '@zenokan4ik',
@@ -14,11 +18,21 @@ DAILY_REWARD = 1000
 
 bot = Client(intents=Intents.ALL)
 
+def ignore_errors(func):
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+    try:
+        return wrapper
+    except Exception as e:
+        print(e)
+
+# @ignore_errors
 @slash_command(name='hello', description='xdd')
 @slash_option(name='text', description='xdddd', required=True, opt_type=OptionType.STRING)
 async def hello(ctx: SlashContext, text: str):
     await ctx.send(text)
 
+# @ignore_errors
 @slash_command(name='profile', description='Нажмите чтобы посмотреть свой профиль')
 async def profile(ctx: SlashContext):
     response = await toserver.getprofile(ctx.author)
@@ -48,8 +62,14 @@ async def onclick(event: Component):
         case "get_reward":
             response = await toserver.getreward(login=ctx.author)
             response = response.content.decode("UTF-8")
+            # response = list(':'.join([i for i in response.split()]).split(':'))[-3:] #Приходите:через,:1:1:1
+            # print(response)
+            # for i in response:
+            #     if len(i) == 1:
+            #         response[response.index(i)]               
             await ctx.send(response)
 
+# @ignore_errors
 @slash_command(name='valorant', description='Обновить/добавить данные аккаунта валорант (в будущем статистика с tracker.gg)')
 @slash_option(name='valdata', description='Убедитесь что данные соответствуют формату: nickname#tag. Валидация данных отсутствует!!', opt_type=OptionType.STRING, required=True)
 async def valorant(ctx: SlashContext, valdata: str):
@@ -58,6 +78,7 @@ async def valorant(ctx: SlashContext, valdata: str):
     response = response.content.decode("UTF-8")
     await ctx.send(response)
 
+# @ignore_errors
 @slash_command(name='addbalance', description='Добавить баланс')
 @slash_option(name='user', description='user', required=True, opt_type=OptionType.STRING)
 @slash_option(name='amount', description='Лаве', required=True, opt_type=OptionType.INTEGER)
@@ -70,6 +91,7 @@ async def addbalance(ctx: SlashContext, user: str, amount: int):
     else:
         await ctx.send('Запрещено')
 
+# @ignore_errors
 @slash_command(name='setbalance', description='Поменять баланс на ...')
 @slash_option(name='user', description='user', required=True, opt_type=OptionType.STRING)
 @slash_option(name='amount', description='Лаве', required=True, opt_type=OptionType.INTEGER)
